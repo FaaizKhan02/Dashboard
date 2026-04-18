@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Australian Leads — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0b0f;
+    --surface: #12141a;
+    --card: #1a1d26;
+    --border: #252836;
+    --accent: #c9a84c;
+    --accent2: #e8c97a;
+    --text: #f0eeea;
+    --muted: #8a8fa8;
+    --female: #e07fa0;
+    --male: #5b8edb;
+    --danger: #e05757;
+    --success: #4caf7a;
+    --radius: 14px;
+    --shadow: 0 8px 32px rgba(0,0,0,0.5);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Background texture */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 50% at 20% 0%, rgba(201,168,76,0.07) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 100%, rgba(91,142,219,0.06) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrapper {
+    position: relative;
+    z-index: 1;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+
+  /* ── Header ── */
+  header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+
+  .logo-block h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(28px, 5vw, 46px);
+    font-weight: 700;
+    letter-spacing: -1px;
+    line-height: 1;
+    background: linear-gradient(135deg, var(--accent2) 0%, var(--accent) 60%, #a0764a 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .logo-block p {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 6px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .stats-bar {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .stat-pill {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 50px;
+    padding: 8px 18px;
+    font-size: 13px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--muted);
+  }
+
+  .stat-pill span {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+  .dot.f { background: var(--female); }
+  .dot.m { background: var(--male); }
+
+  /* ── Controls ── */
+  .controls {
+    display: grid;
+    grid-template-columns: 1fr auto auto auto;
+    gap: 12px;
+    margin-bottom: 28px;
+    align-items: center;
+  }
+
+  @media (max-width: 700px) {
+    .controls { grid-template-columns: 1fr 1fr; }
+    .controls .search-wrap { grid-column: 1/-1; }
+  }
+
+  .search-wrap {
+    position: relative;
+  }
+
+  .search-wrap svg {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    pointer-events: none;
+  }
+
+  input[type="text"], select {
+    width: 100%;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    padding: 13px 16px;
+    outline: none;
+    transition: border 0.2s, box-shadow 0.2s;
+  }
+
+  input[type="text"] { padding-left: 46px; }
+
+  input[type="text"]:focus, select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(201,168,76,0.12);
+  }
+
+  select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%238a8fa8' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 38px; }
+
+  select option { background: var(--card); color: var(--text); }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 13px 22px;
+    border-radius: var(--radius);
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .btn-gold {
+    background: linear-gradient(135deg, var(--accent2), var(--accent));
+    color: #0a0b0f;
+  }
+
+  .btn-gold:hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 4px 20px rgba(201,168,76,0.35); }
+
+  .btn-ghost {
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ── Table ── */
+  .table-wrap {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+
+  table { width: 100%; border-collapse: collapse; }
+
+  thead {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+
+  th {
+    padding: 16px 20px;
+    text-align: left;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 600;
+    white-space: nowrap;
+    user-select: none;
+  }
+
+  th.sortable { cursor: pointer; }
+  th.sortable:hover { color: var(--accent); }
+
+  th .sort-icon { margin-left: 6px; opacity: 0.4; font-size: 10px; transition: opacity 0.2s; }
+  th.sort-asc .sort-icon, th.sort-desc .sort-icon { opacity: 1; color: var(--accent); }
+
+  tbody tr {
+    border-bottom: 1px solid rgba(37,40,54,0.6);
+    transition: background 0.15s;
+  }
+
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: rgba(201,168,76,0.04); }
+
+  td {
+    padding: 15px 20px;
+    font-size: 14px;
+    vertical-align: middle;
+  }
+
+  .td-num {
+    color: var(--muted);
+    font-size: 12px;
+    width: 40px;
+  }
+
+  .avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    flex-shrink: 0;
+    text-transform: uppercase;
+  }
+
+  .name-cell {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .name-cell .name { font-weight: 500; text-transform: capitalize; }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 11px;
+    border-radius: 50px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: capitalize;
+  }
+
+  .badge.female { background: rgba(224,127,160,0.15); color: var(--female); border: 1px solid rgba(224,127,160,0.25); }
+  .badge.male   { background: rgba(91,142,219,0.15);  color: var(--male);   border: 1px solid rgba(91,142,219,0.25); }
+
+  .followers-bar-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .followers-val {
+    font-weight: 600;
+    font-size: 14px;
+    min-width: 52px;
+    color: var(--accent2);
+    text-transform: lowercase;
+  }
+
+  .bar-bg {
+    flex: 1;
+    height: 4px;
+    background: var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    min-width: 60px;
+  }
+
+  .bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+  }
+
+  .link-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 6px 12px;
+    background: rgba(201,168,76,0.08);
+    border: 1px solid rgba(201,168,76,0.18);
+    border-radius: 8px;
+    transition: all 0.2s;
+  }
+
+  .link-btn:hover {
+    background: rgba(201,168,76,0.18);
+    color: var(--accent2);
+    transform: translateY(-1px);
+  }
+
+  .action-btns { display: flex; gap: 8px; }
+
+  .icon-btn {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 14px;
+  }
+
+  .icon-btn:hover.edit { border-color: var(--accent); color: var(--accent); background: rgba(201,168,76,0.08); }
+  .icon-btn:hover.del { border-color: var(--danger); color: var(--danger); background: rgba(224,87,87,0.08); }
+
+  /* ── Empty state ── */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+  }
+
+  .empty-state svg { opacity: 0.3; margin-bottom: 16px; }
+  .empty-state p { font-size: 15px; }
+
+  /* ── Modal ── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    backdrop-filter: blur(6px);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s;
+  }
+
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+
+  .modal {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 36px;
+    width: 100%;
+    max-width: 480px;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+    transform: translateY(20px);
+    transition: transform 0.25s;
+  }
+
+  .modal-overlay.open .modal { transform: translateY(0); }
+
+  .modal h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 24px;
+    margin-bottom: 24px;
+    color: var(--accent2);
+  }
+
+  .form-group { margin-bottom: 18px; }
+
+  label {
+    display: block;
+    font-size: 11px;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+
+  .modal input, .modal select {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    padding: 12px 14px;
+    outline: none;
+    transition: border 0.2s, box-shadow 0.2s;
+  }
+
+  .modal input:focus, .modal select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(201,168,76,0.12);
+  }
+
+  .modal-footer {
+    display: flex;
+    gap: 12px;
+    margin-top: 28px;
+  }
+
+  .modal-footer .btn { flex: 1; justify-content: center; }
+
+  /* ── Toast ── */
+  .toast {
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--card);
+    border: 1px solid var(--accent);
+    color: var(--accent2);
+    padding: 12px 24px;
+    border-radius: 50px;
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 200;
+    opacity: 0;
+    transition: all 0.3s;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    white-space: nowrap;
+  }
+
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* Row enter animation */
+  @keyframes rowIn {
+    from { opacity: 0; transform: translateX(-8px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+
+  tbody tr { animation: rowIn 0.25s ease both; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  .table-scroll { overflow-x: auto; }
+
+  .count-badge {
+    background: rgba(201,168,76,0.15);
+    color: var(--accent);
+    border-radius: 50px;
+    padding: 2px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-left: 8px;
+  }
+</style>
+</head>
+<body>
+
+<div class="wrapper">
+
+  <header>
+    <div class="logo-block">
+      <h1>Australian Leads</h1>
+      <p>Instagram Influencer Directory</p>
+    </div>
+    <div class="stats-bar">
+      <div class="stat-pill"><span id="total-count">30</span> Total</div>
+      <div class="stat-pill"><span class="dot f"></span><span id="female-count">–</span> Female</div>
+      <div class="stat-pill"><span class="dot m"></span><span id="male-count">–</span> Male</div>
+    </div>
+  </header>
+
+  <div class="controls">
+    <div class="search-wrap">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+        <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.099zm-5.24 1.062a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z"/>
+      </svg>
+      <input type="text" id="search" placeholder="Search by name…" oninput="applyFilters()">
+    </div>
+    <select id="gender-filter" onchange="applyFilters()">
+      <option value="">All Genders</option>
+      <option value="female">Female</option>
+      <option value="male">Male</option>
+    </select>
+    <select id="sort-order" onchange="applyFilters()">
+      <option value="">Sort by Followers</option>
+      <option value="desc">↓ Highest First</option>
+      <option value="asc">↑ Lowest First</option>
+    </select>
+    <button class="btn btn-gold" onclick="openModal()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2z"/></svg>
+      Add Lead
+    </button>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th class="td-num">#</th>
+            <th>Name</th>
+            <th>Gender</th>
+            <th class="sortable" id="th-followers" onclick="toggleFollowersSort()">
+              Followers <span class="sort-icon" id="sort-icon">↕</span>
+            </th>
+            <th>Instagram</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <h2 id="modal-title">Add New Lead</h2>
+    <div class="form-group">
+      <label>Full Name</label>
+      <input type="text" id="f-name" placeholder="e.g. Sarah Johnson">
+    </div>
+    <div class="form-group">
+      <label>Gender</label>
+      <select id="f-gender">
+        <option value="female">Female</option>
+        <option value="male">Male</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Followers (e.g. 120k, 1.2m)</label>
+      <input type="text" id="f-followers" placeholder="e.g. 250k">
+    </div>
+    <div class="form-group">
+      <label>Instagram URL</label>
+      <input type="text" id="f-url" placeholder="https://www.instagram.com/username/">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-gold" id="modal-save-btn" onclick="saveEntry()">Save Lead</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+  const RAW_DATA = [
+    {name:"tully smith",followers:"212k",gender:"female",url:"https://www.instagram.com/tee_smyth/?hl=en"},
+    {name:"Mitchellhibberd",followers:"141k",gender:"male",url:"https://www.instagram.com/mitchellhibberd/?hl=en"},
+    {name:"Jack Reynolds",followers:"55.8k",gender:"male",url:"https://www.instagram.com/itsmejack/"},
+    {name:"Ben mcintosh",followers:"352k",gender:"male",url:"https://www.instagram.com/benjmcintosh/?hl=en"},
+    {name:"Luke hines",followers:"101k",gender:"male",url:"https://www.instagram.com/lukehines/?hl=en"},
+    {name:"Lachlan mclean",followers:"706k",gender:"male",url:"https://www.instagram.com/lachy_mclean/?hl=en"},
+    {name:"Scott pendlebury",followers:"245k",gender:"male",url:"https://www.instagram.com/sp_10/?hl=en"},
+    {name:"lyndlklean",followers:"90.1k",gender:"female",url:"https://www.instagram.com/lyndlkean/?hl=en"},
+    {name:"Milo hartil",followers:"42.4k",gender:"female",url:"https://www.instagram.com/milohartill/?hl=en"},
+    {name:"Kelly mccaren",followers:"41.4k",gender:"female",url:"https://www.instagram.com/kelly_mccarren/?hl=en"},
+    {name:"Phoebe chakar",followers:"98.1k",gender:"female",url:"https://www.instagram.com/phoebe_chakar/?hl=en"},
+    {name:"Sarah",followers:"1.2m",gender:"female",url:"https://www.instagram.com/sarahs_day/"},
+    {name:"LIlly jac smith",followers:"115k",gender:"female",url:"https://www.instagram.com/tillyjacsmith/?hl=en"},
+    {name:"Maxine wylde",followers:"478k",gender:"female",url:"https://www.instagram.com/maxinewylde/?hl=en"},
+    {name:"Brittany jhamilton",followers:"91.4k",gender:"female",url:"https://www.instagram.com/brittanyjhamilton/?hl=en"},
+    {name:"Jordan anderson",followers:"176k",gender:"male",url:"https://www.instagram.com/jordann.aanderson/?hl=en"},
+    {name:"Maria thattil",followers:"340k",gender:"female",url:"https://www.instagram.com/mariathattil/?hl=en"},
+    {name:"Leah williams",followers:"82.1k",gender:"female",url:"https://www.instagram.com/leahwwilliams_/?hl=en"},
+    {name:"Issabelle grace",followers:"73.7k",gender:"female",url:"https://www.instagram.com/isabellegrace/?hl=en"},
+    {name:"Karissa sparke",followers:"94.7k",gender:"female",url:"https://www.instagram.com/karissasparke/?hl=en"},
+    {name:"Chiristine",followers:"44.6k",gender:"female",url:"https://www.instagram.com/s.ilverella/?hl=en"},
+    {name:"Aneeqa mahmood",followers:"35.5k",gender:"female",url:"https://www.instagram.com/aneeqa.creates/?hl=en"},
+    {name:"Jess fusel",followers:"49.8k",gender:"female",url:"https://www.instagram.com/jessfussell?hl=en"},
+    {name:"Tiana sale",followers:"61.8k",gender:"female",url:"https://www.instagram.com/tianasala___?hl=en"},
+    {name:"Elly awesome",followers:"185k",gender:"female",url:"https://www.instagram.com/ellyawesome?hl=en"},
+    {name:"Natalia kalinowski",followers:"109k",gender:"female",url:"https://www.instagram.com/natkalinowski?hl=en"},
+    {name:"Rebecca judd",followers:"756k",gender:"female",url:"https://www.instagram.com/becjudd/?hl=en"},
+    {name:"Lex",followers:"51.8k",gender:"female",url:"https://www.instagram.com/lex_inwonderland?hl=en"},
+    {name:"Holly portelli",followers:"618k",gender:"female",url:"https://www.instagram.com/hollyportelli?hl=en"},
+    {name:"aus_empire",followers:"55.4k",gender:"female",url:"https://www.instagram.com/aus_empire?hl=en"},
+  ];
+
+  const STORAGE_KEY = 'aus_leads_data';
+  const saved = localStorage.getItem(STORAGE_KEY);
+  let data = saved ? JSON.parse(saved) : RAW_DATA.map((d, i) => ({ ...d, id: i }));
+  let nextId = data.length ? Math.max(...data.map(d => d.id)) + 1 : RAW_DATA.length;
+
+  function saveToStorage() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  }
+  let editingId = null;
+  let currentSort = '';
+
+  // Convert follower string to number for sorting
+  function toNum(str) {
+    if (!str) return 0;
+    const s = str.toLowerCase().trim();
+    if (s.endsWith('m')) return parseFloat(s) * 1000000;
+    if (s.endsWith('k')) return parseFloat(s) * 1000;
+    return parseFloat(s) || 0;
+  }
+
+  function getMaxFollowers() {
+    return Math.max(...data.map(d => toNum(d.followers)));
+  }
+
+  // Avatar color palette
+  const COLORS = [
+    ['#c9a84c','#3a2e10'],['#5b8edb','#0e1e3a'],['#e07fa0','#3a0f1e'],
+    ['#4caf7a','#0e2a1a'],['#9b7ae8','#1e102e'],['#e0925b','#3a1e0a'],
+  ];
+
+  function getColor(name) {
+    let h = 0;
+    for (let c of name) h = (h * 31 + c.charCodeAt(0)) & 0xffffffff;
+    return COLORS[Math.abs(h) % COLORS.length];
+  }
+
+  function applyFilters() {
+    const q = document.getElementById('search').value.toLowerCase().trim();
+    const g = document.getElementById('gender-filter').value;
+    const s = document.getElementById('sort-order').value;
+    currentSort = s;
+
+    // Update sort header
+    const th = document.getElementById('th-followers');
+    const icon = document.getElementById('sort-icon');
+    th.className = 'sortable';
+    if (s === 'desc') { th.classList.add('sort-desc'); icon.textContent = '↓'; }
+    else if (s === 'asc') { th.classList.add('sort-asc'); icon.textContent = '↑'; }
+    else { icon.textContent = '↕'; }
+
+    let filtered = data.filter(d => {
+      const nameOk = !q || d.name.toLowerCase().includes(q);
+      const genderOk = !g || d.gender === g;
+      return nameOk && genderOk;
+    });
+
+    if (s === 'asc') filtered.sort((a,b) => toNum(a.followers) - toNum(b.followers));
+    else if (s === 'desc') filtered.sort((a,b) => toNum(b.followers) - toNum(a.followers));
+
+    renderTable(filtered);
+    updateStats();
+  }
+
+  function toggleFollowersSort() {
+    const sel = document.getElementById('sort-order');
+    if (sel.value === 'desc') sel.value = 'asc';
+    else sel.value = 'desc';
+    applyFilters();
+  }
+
+  function renderTable(rows) {
+    const tbody = document.getElementById('table-body');
+    const max = getMaxFollowers();
+
+    if (!rows.length) {
+      tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state">
+        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="currentColor" viewBox="0 0 16 16"><path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/></svg>
+        <p>No results found. Try a different search.</p>
+      </div></td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = rows.map((d, i) => {
+      const [bg, fg] = getColor(d.name);
+      const initials = d.name.trim().split(/\s+/).slice(0,2).map(w=>w[0]).join('').toUpperCase();
+      const pct = max > 0 ? (toNum(d.followers) / max * 100).toFixed(1) : 0;
+      return `
+      <tr>
+        <td class="td-num">${i+1}</td>
+        <td>
+          <div class="name-cell">
+            <div class="avatar" style="background:${bg};color:${fg}">${initials}</div>
+            <span class="name">${d.name.trim()}</span>
+          </div>
+        </td>
+        <td><span class="badge ${d.gender}">${d.gender}</span></td>
+        <td>
+          <div class="followers-bar-wrap">
+            <span class="followers-val">${d.followers}</span>
+            <div class="bar-bg"><div class="bar-fill" style="width:${pct}%"></div></div>
+          </div>
+        </td>
+        <td>
+          <a href="${d.url}" target="_blank" rel="noopener" class="link-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16"><path d="M8 0C5.829 0 5.556.01 4.703.048 3.85.088 3.269.222 2.76.42a3.917 3.917 0 0 0-1.417.923A3.927 3.927 0 0 0 .42 2.76C.222 3.268.087 3.85.048 4.7.01 5.555 0 5.827 0 8.001c0 2.172.01 2.444.048 3.297.04.852.174 1.433.372 1.942.205.526.478.972.923 1.417.444.445.89.719 1.416.923.51.198 1.09.333 1.942.372C5.555 15.99 5.827 16 8 16s2.444-.01 3.298-.048c.851-.04 1.434-.174 1.943-.372a3.916 3.916 0 0 0 1.416-.923c.445-.445.718-.891.923-1.417.197-.509.332-1.09.372-1.942C15.99 10.445 16 10.173 16 8s-.01-2.445-.048-3.299c-.04-.851-.175-1.433-.372-1.941a3.926 3.926 0 0 0-.923-1.417A3.911 3.911 0 0 0 13.24.42c-.51-.198-1.092-.333-1.943-.372C10.443.01 10.172 0 7.998 0h.003zm-.717 1.442h.718c2.136 0 2.389.007 3.232.046.78.035 1.204.166 1.486.275.373.145.64.319.92.599.28.28.453.546.598.92.11.281.24.705.275 1.485.039.843.047 1.096.047 3.231s-.008 2.389-.047 3.232c-.035.78-.166 1.203-.275 1.485a2.47 2.47 0 0 1-.599.919c-.28.28-.546.453-.92.598-.28.11-.704.24-1.485.276-.843.038-1.096.047-3.232.047s-2.39-.009-3.233-.047c-.78-.036-1.203-.166-1.485-.276a2.478 2.478 0 0 1-.92-.598 2.48 2.48 0 0 1-.6-.92c-.109-.281-.24-.705-.275-1.485-.038-.843-.046-1.096-.046-3.233 0-2.136.008-2.388.046-3.231.036-.78.166-1.204.276-1.486.145-.373.319-.64.599-.92.28-.28.546-.453.92-.598.282-.11.705-.24 1.485-.276.738-.034 1.024-.044 2.515-.045v.002zm4.988 1.328a.96.96 0 1 0 0 1.92.96.96 0 0 0 0-1.92zm-4.27 1.122a4.109 4.109 0 1 0 0 8.217 4.109 4.109 0 0 0 0-8.217zm0 1.441a2.667 2.667 0 1 1 0 5.334 2.667 2.667 0 0 1 0-5.334z"/></svg>
+            Profile
+          </a>
+        </td>
+        <td>
+          <div class="action-btns">
+            <button class="icon-btn edit" title="Edit" onclick="editEntry(${d.id})">
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/></svg>
+            </button>
+            <button class="icon-btn del" title="Delete" onclick="deleteEntry(${d.id})">
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/><path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/></svg>
+            </button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  function updateStats() {
+    document.getElementById('total-count').textContent = data.length;
+    document.getElementById('female-count').textContent = data.filter(d=>d.gender==='female').length;
+    document.getElementById('male-count').textContent = data.filter(d=>d.gender==='male').length;
+  }
+
+  // ── Modal ──
+  function openModal(id = null) {
+    editingId = id;
+    const modal = document.getElementById('modal');
+    const title = document.getElementById('modal-title');
+    const saveBtn = document.getElementById('modal-save-btn');
+
+    if (id !== null) {
+      const entry = data.find(d => d.id === id);
+      document.getElementById('f-name').value = entry.name;
+      document.getElementById('f-gender').value = entry.gender;
+      document.getElementById('f-followers').value = entry.followers;
+      document.getElementById('f-url').value = entry.url;
+      title.textContent = 'Edit Lead';
+      saveBtn.textContent = 'Update Lead';
+    } else {
+      document.getElementById('f-name').value = '';
+      document.getElementById('f-gender').value = 'female';
+      document.getElementById('f-followers').value = '';
+      document.getElementById('f-url').value = '';
+      title.textContent = 'Add New Lead';
+      saveBtn.textContent = 'Save Lead';
+    }
+
+    modal.classList.add('open');
+  }
+
+  function closeModal() {
+    document.getElementById('modal').classList.remove('open');
+    editingId = null;
+  }
+
+  function closeModalOutside(e) {
+    if (e.target === document.getElementById('modal')) closeModal();
+  }
+
+  function saveEntry() {
+    const name = document.getElementById('f-name').value.trim();
+    const gender = document.getElementById('f-gender').value;
+    const followers = document.getElementById('f-followers').value.trim();
+    const url = document.getElementById('f-url').value.trim();
+
+    if (!name || !followers || !url) { showToast('⚠️ Please fill all fields'); return; }
+
+    if (editingId !== null) {
+      const i = data.findIndex(d => d.id === editingId);
+      data[i] = { ...data[i], name, gender, followers, url };
+      showToast('✓ Lead updated successfully');
+    } else {
+      data.push({ id: nextId++, name, gender, followers, url });
+      showToast('✓ New lead added successfully');
+    }
+
+    saveToStorage();
+    closeModal();
+    applyFilters();
+  }
+
+  function editEntry(id) { openModal(id); }
+
+  function deleteEntry(id) {
+    if (!confirm('Delete this lead?')) return;
+    data = data.filter(d => d.id !== id);
+    saveToStorage();
+    applyFilters();
+    showToast('✗ Lead deleted');
+  }
+
+  // ── Toast ──
+  let toastTimer;
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+  }
+
+  // ── Init ──
+  applyFilters();
+</script>
+</body>
+</html>
